@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Rate Limit Simulator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        label, input { display: block; margin-top: 10px; }
+        .results { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>OTP Rate Limit Simulator</h2>
+
+    <label>
+        OTP Requests per Time Frame:
+        <input type="number" id="otpRequestsPerTimeFrame" value="5">
+    </label>
+    <label>
+        Time Frame for OTP Requests (minutes):
+        <input type="number" id="otpTimeFrameMinutes" value="60">
+    </label>
+    <label>
+        Max OTP Requests Per Day:
+        <input type="number" id="otpRequestsPerDay" value="15">
+    </label>
+    <label>
+        Ban Length After Hitting Daily OTP Cap (minutes):
+        <input type="number" id="otpBanLengthMinutes" value="60">
+    </label>
+    
+    <hr>
+    
+    <label>
+        Verification Attempts per Time Frame:
+        <input type="number" id="verificationAttemptsPerTimeFrame" value="3">
+    </label>
+    <label>
+        Time Frame for Verification Attempts (minutes):
+        <input type="number" id="verificationTimeFrameMinutes" value="5">
+    </label>
+    <label>
+        Max Verification Attempts Per Day:
+        <input type="number" id="verificationAttemptsPerDay" value="15">
+    </label>
+    <label>
+        Verification Attempts per Single OTP Request:
+        <input type="number" id="attemptsPerOtp" value="1">
+    </label>
+
+    <button onclick="simulate()">Simulate</button>
+
+    <div class="results" id="results"></div>
+
+    <script>
+        function simulate() {
+            const totalUniqueOtps = 1000000;
+
+            const otpRequestsPerTimeFrame = parseInt(document.getElementById("otpRequestsPerTimeFrame").value);
+            const otpTimeFrameMinutes = parseInt(document.getElementById("otpTimeFrameMinutes").value);
+            const otpRequestsPerDay = parseInt(document.getElementById("otpRequestsPerDay").value);
+            const otpBanLengthMinutes = parseInt(document.getElementById("otpBanLengthMinutes").value);
+
+            const verificationAttemptsPerTimeFrame = parseInt(document.getElementById("verificationAttemptsPerTimeFrame").value);
+            const verificationTimeFrameMinutes = parseInt(document.getElementById("verificationTimeFrameMinutes").value);
+            const verificationAttemptsPerDay = parseInt(document.getElementById("verificationAttemptsPerDay").value);
+            const attemptsPerOtp = parseInt(document.getElementById("attemptsPerOtp").value);
+
+            const otpIntervalsPerDay = Math.floor((24 * 60) / otpTimeFrameMinutes);
+            const verificationIntervalsPerDay = Math.floor((24 * 60) / verificationTimeFrameMinutes);
+
+            const totalOtpRequestsPerDay = Math.min(otpRequestsPerDay, otpRequestsPerTimeFrame * otpIntervalsPerDay);
+            const totalVerificationAttemptsPerDay = Math.min(verificationAttemptsPerDay, verificationAttemptsPerTimeFrame * verificationIntervalsPerDay);
+
+            const effectiveOtpsPerDay = Math.min(totalOtpRequestsPerDay, Math.floor(totalVerificationAttemptsPerDay / attemptsPerOtp));
+            const bruteForceProbability = 1 - Math.pow((1 - (1 / totalUniqueOtps)), effectiveOtpsPerDay);
+
+            document.getElementById("results").innerHTML = `
+                <p>Total OTP Requests Possible Per Day: ${totalOtpRequestsPerDay}</p>
+                <p>Total Verification Attempts Possible Per Day: ${totalVerificationAttemptsPerDay}</p>
+                <p>Effective OTPs that can be Verified in a Day: ${effectiveOtpsPerDay}</p>
+                <p>Brute-Force Difficulty Score (Probability of Success): ${(bruteForceProbability * 100).toFixed(6)}%</p>
+                <p>Ban Length After Hitting Daily OTP Cap: ${otpBanLengthMinutes} minutes</p>
+            `;
+        }
+    </script>
+</body>
+</html>
