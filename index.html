@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Rate Limit Simulator</title>
+    <title>Effective OTP Calculator</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         label, input { display: block; margin-top: 10px; }
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h2>OTP Rate Limit Simulator</h2>
+    <h2>Effective OTP Calculator</h2>
 
     <label>
         OTP Requests per Time Frame:
@@ -49,12 +49,12 @@
         <input type="number" id="attemptsPerOtp" value="1">
     </label>
 
-    <button onclick="simulate()">Simulate</button>
+    <button onclick="calculate()">Calculate</button>
 
     <div class="results" id="results"></div>
 
     <script>
-        function simulate() {
+        function calculate() {
             const totalUniqueOtps = 1000000;
 
             const otpRequestsPerTimeFrame = parseInt(document.getElementById("otpRequestsPerTimeFrame").value);
@@ -74,14 +74,15 @@
             const totalVerificationAttemptsPerDay = Math.min(verificationAttemptsPerDay, verificationAttemptsPerTimeFrame * verificationIntervalsPerDay);
 
             const effectiveOtpsPerDay = Math.min(totalOtpRequestsPerDay, Math.floor(totalVerificationAttemptsPerDay / attemptsPerOtp));
-            const bruteForceProbability = 1 - Math.pow((1 - (1 / totalUniqueOtps)), effectiveOtpsPerDay);
+
+            const bruteForceProbability = 1 - Math.pow(Math.pow((1 - (1 / totalUniqueOtps)), attemptsPerOtp), effectiveOtpsPerDay);
 
             document.getElementById("results").innerHTML = `
                 <p>Total OTP Requests Possible Per Day: ${totalOtpRequestsPerDay}</p>
                 <p>Total Verification Attempts Possible Per Day: ${totalVerificationAttemptsPerDay}</p>
+                <hr>
                 <p>Effective OTPs that can be Verified in a Day: ${effectiveOtpsPerDay}</p>
-                <p>Brute-Force Difficulty Score (Probability of Success): ${(bruteForceProbability * 100).toFixed(6)}%</p>
-                <p>Ban Length After Hitting Daily OTP Cap: ${otpBanLengthMinutes} minutes</p>
+                <p>Bruteforce Probability: ${(bruteForceProbability * 100).toFixed(6)}%</p>
             `;
         }
     </script>
